@@ -14,9 +14,17 @@ export default function DatingDatePage({ onCorrectAnswer, hasAnswered }: DatingD
   const [showHint, setShowHint] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const navigate = useNavigate();
 
   const correctDate = '2025-03-16';
+
+  const hints = [
+    "Think about that beautiful spring day when everything changed... 🌸",
+    "It was in March, when the flowers were starting to bloom and love was in the air... 💐",
+    "Remember? It was the 16th day of the third month in 2025... 💕",
+    "March 16th, 2025 - the day you said yes to being mine forever... 💖"
+  ];
 
   const handleSubmit = () => {
     if (selectedDate === correctDate) {
@@ -28,8 +36,14 @@ export default function DatingDatePage({ onCorrectAnswer, hasAnswered }: DatingD
       }, 3000);
     } else {
       setShowHint(true);
-      setTimeout(() => setShowHint(false), 3000);
+      setWrongAttempts(prev => prev + 1);
+      setTimeout(() => setShowHint(false), 4000);
     }
+  };
+
+  const getCurrentHint = () => {
+    const hintIndex = Math.min(wrongAttempts, hints.length - 1);
+    return hints[hintIndex];
   };
 
   if (hasAnswered) {
@@ -113,14 +127,43 @@ export default function DatingDatePage({ onCorrectAnswer, hasAnswered }: DatingD
             transition={{ delay: 0.7, duration: 0.6 }}
           >
             <div className="relative">
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full text-center text-lg border-2 border-pink-200 focus:border-pink-400 rounded-xl p-4 bg-gradient-to-r from-pink-50 to-purple-50 focus:outline-none transition-all duration-300"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-200/20 to-purple-200/20 pointer-events-none"></div>
+              {/* Custom styled date input */}
+              <div className="relative">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full text-center text-lg border-2 border-pink-200 focus:border-pink-400 rounded-xl p-4 bg-gradient-to-r from-pink-50 to-purple-50 focus:outline-none transition-all duration-300 appearance-none cursor-pointer"
+                  style={{ 
+                    fontFamily: 'Playfair Display, serif',
+                    colorScheme: 'light'
+                  }}
+                />
+                {/* Custom date picker overlay */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-pink-200/10 to-purple-200/10 pointer-events-none"></div>
+                
+                {/* Decorative hearts on date input */}
+                <div className="absolute top-2 left-2 text-pink-300 opacity-50 pointer-events-none">
+                  <Heart size={16} />
+                </div>
+                <div className="absolute top-2 right-2 text-purple-300 opacity-50 pointer-events-none">
+                  <Heart size={16} />
+                </div>
+              </div>
+              
+              {/* Date input label */}
+              {!selectedDate && (
+                <motion.div 
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: selectedDate ? 0 : 0.6 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <span className="text-gray-400 text-lg" style={{ fontFamily: 'Playfair Display, serif' }}>
+                    Select our special date 💕
+                  </span>
+                </motion.div>
+              )}
             </div>
           </motion.div>
 
@@ -160,9 +203,25 @@ export default function DatingDatePage({ onCorrectAnswer, hasAnswered }: DatingD
                 exit={{ opacity: 0, scale: 0.8, y: -20 }}
                 transition={{ duration: 0.5 }}
               >
-                <p className="text-pink-600 font-medium" style={{ fontFamily: 'Playfair Display, serif' }}>
-                  Think about that beautiful spring day when everything changed... 🌸
-                </p>
+                <motion.p 
+                  className="text-pink-600 font-medium" 
+                  style={{ fontFamily: 'Playfair Display, serif' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  {getCurrentHint()}
+                </motion.p>
+                
+                {/* Hint number indicator */}
+                <motion.div 
+                  className="mt-2 text-xs text-pink-400"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  Hint {wrongAttempts + 1} of {hints.length}
+                </motion.div>
               </motion.div>
             )}
 
@@ -212,6 +271,71 @@ export default function DatingDatePage({ onCorrectAnswer, hasAnswered }: DatingD
               </motion.div>
             )}
           </AnimatePresence>
+        </div>
+
+        {/* Decorative corner hearts */}
+        <div className="absolute top-4 left-4 text-pink-300 opacity-30">
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 10, -10, 0]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Heart size={20} />
+          </motion.div>
+        </div>
+        <div className="absolute top-4 right-4 text-purple-300 opacity-30">
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, -10, 10, 0]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              delay: 1,
+              ease: "easeInOut"
+            }}
+          >
+            <Heart size={20} />
+          </motion.div>
+        </div>
+        <div className="absolute bottom-4 left-4 text-purple-300 opacity-30">
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 10, -10, 0]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              delay: 2,
+              ease: "easeInOut"
+            }}
+          >
+            <Heart size={20} />
+          </motion.div>
+        </div>
+        <div className="absolute bottom-4 right-4 text-pink-300 opacity-30">
+          <motion.div
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, -10, 10, 0]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              delay: 1.5,
+              ease: "easeInOut"
+            }}
+          >
+            <Heart size={20} />
+          </motion.div>
         </div>
       </motion.div>
     </div>

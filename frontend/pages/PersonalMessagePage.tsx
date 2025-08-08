@@ -12,6 +12,7 @@ export default function PersonalMessagePage({ onContinue }: PersonalMessagePageP
   const navigate = useNavigate();
   const [currentParagraph, setCurrentParagraph] = useState(0);
   const [showButton, setShowButton] = useState(false);
+  const [displayedText, setDisplayedText] = useState<string[]>([]);
 
   const message = [
     "From the moment we started dating on March 16th, 2025, my life has been filled with colors I never knew existed. You brought sunshine into my darkest days and made every ordinary moment feel extraordinary.",
@@ -27,7 +28,7 @@ export default function PersonalMessagePage({ onContinue }: PersonalMessagePageP
         if (prev < message.length - 1) {
           return prev + 1;
         } else {
-          setShowButton(true);
+          setTimeout(() => setShowButton(true), 1000);
           clearInterval(timer);
           return prev;
         }
@@ -37,39 +38,61 @@ export default function PersonalMessagePage({ onContinue }: PersonalMessagePageP
     return () => clearInterval(timer);
   }, []);
 
+  // Typewriter effect for each paragraph
+  useEffect(() => {
+    if (currentParagraph >= 0) {
+      const currentText = message[currentParagraph];
+      let charIndex = 0;
+      const newDisplayedText = [...displayedText];
+      
+      if (!newDisplayedText[currentParagraph]) {
+        newDisplayedText[currentParagraph] = '';
+      }
+
+      const typeWriter = setInterval(() => {
+        if (charIndex < currentText.length) {
+          newDisplayedText[currentParagraph] = currentText.slice(0, charIndex + 1);
+          setDisplayedText([...newDisplayedText]);
+          charIndex++;
+        } else {
+          clearInterval(typeWriter);
+        }
+      }, 30); // Adjust speed here (lower = faster)
+
+      return () => clearInterval(typeWriter);
+    }
+  }, [currentParagraph]);
+
   const handleContinue = () => {
     onContinue();
     navigate('/wishes');
   };
 
   // Text animation variants
-  const textVariants = {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: {
+        duration: 0.8,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const paragraphVariants = {
     hidden: { 
       opacity: 0, 
-      y: 50,
-      scale: 0.8
+      y: 30,
+      scale: 0.95
     },
     visible: { 
       opacity: 1, 
       y: 0,
       scale: 1,
       transition: {
-        duration: 1,
-        ease: "easeOut",
-        type: "spring",
-        stiffness: 100,
-        damping: 12
-      }
-    }
-  };
-
-  const letterVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: {
-        duration: 0.5
+        duration: 0.8,
+        ease: "easeOut"
       }
     }
   };
@@ -126,36 +149,34 @@ export default function PersonalMessagePage({ onContinue }: PersonalMessagePageP
           </motion.h1>
         </div>
 
-        <div className="space-y-6 md:space-y-8 text-center">
-          <AnimatePresence mode="wait">
-            {message.slice(0, currentParagraph + 1).map((paragraph, index) => (
-              <motion.div
-                key={index}
-                variants={textVariants}
-                initial="hidden"
-                animate="visible"
-                className="text-base md:text-lg lg:text-xl text-gray-700 leading-relaxed"
-                style={{ fontFamily: 'Playfair Display, serif' }}
-              >
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  transition={{ staggerChildren: 0.02 }}
-                >
-                  {paragraph.split('').map((char, charIndex) => (
-                    <motion.span
-                      key={charIndex}
-                      variants={letterVariants}
-                      className="inline-block"
-                    >
-                      {char === ' ' ? '\u00A0' : char}
-                    </motion.span>
-                  ))}
-                </motion.div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+        <motion.div 
+          className="space-y-6 md:space-y-8 text-center"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {displayedText.map((text, index) => (
+            <motion.div
+              key={index}
+              variants={paragraphVariants}
+              initial="hidden"
+              animate="visible"
+              className="text-base md:text-lg lg:text-xl text-gray-700 leading-relaxed"
+              style={{ fontFamily: 'Playfair Display, serif' }}
+            >
+              <span className="inline-block">
+                {text}
+                {index === currentParagraph && text.length < message[index].length && (
+                  <motion.span
+                    className="inline-block w-0.5 h-6 bg-pink-500 ml-1"
+                    animate={{ opacity: [1, 0] }}
+                    transition={{ duration: 0.8, repeat: Infinity }}
+                  />
+                )}
+              </span>
+            </motion.div>
+          ))}
+        </motion.div>
 
         <AnimatePresence>
           {showButton && (
@@ -164,7 +185,7 @@ export default function PersonalMessagePage({ onContinue }: PersonalMessagePageP
               initial={{ opacity: 0, y: 50, scale: 0.8 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ 
-                delay: 1,
+                delay: 0.5,
                 type: "spring",
                 stiffness: 100,
                 damping: 15
