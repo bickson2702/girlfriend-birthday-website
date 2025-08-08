@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +12,7 @@ export default function BirthdayMessagePage({ onContinue }: BirthdayMessagePageP
   const [showMessage, setShowMessage] = useState(false);
   const [showButton, setShowButton] = useState(false);
   const [confetti, setConfetti] = useState<Array<{ id: number; x: number; y: number; color: string }>>([]);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     // Start confetti animation
@@ -27,11 +28,34 @@ export default function BirthdayMessagePage({ onContinue }: BirthdayMessagePageP
     // Show message after a short delay
     setTimeout(() => setShowMessage(true), 1000);
     
+    // Play birthday audio when message shows
+    setTimeout(() => {
+      if (audioRef.current) {
+        audioRef.current.play().catch(error => {
+          console.log('Audio autoplay prevented:', error);
+        });
+      }
+    }, 1500);
+    
     // Show continue button after message animation
     setTimeout(() => setShowButton(true), 4000);
   }, []);
 
   const handleContinue = () => {
+    // Fade out audio when continuing
+    if (audioRef.current) {
+      const fadeOut = setInterval(() => {
+        if (audioRef.current && audioRef.current.volume > 0.1) {
+          audioRef.current.volume -= 0.1;
+        } else {
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+          clearInterval(fadeOut);
+        }
+      }, 100);
+    }
+    
     onContinue();
     navigate('/message');
   };
@@ -48,6 +72,19 @@ export default function BirthdayMessagePage({ onContinue }: BirthdayMessagePageP
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-400 via-purple-500 to-indigo-600 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Hidden audio element */}
+      <audio
+        ref={audioRef}
+        loop
+        preload="auto"
+        className="hidden"
+      >
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav" />
+        <source src="https://actions.google.com/sounds/v1/celebrations/birthday_party_horn.ogg" type="audio/ogg" />
+        {/* Fallback to a simple birthday tune */}
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT" />
+      </audio>
+
       {/* Background Squares */}
       <div className="absolute inset-0">
         {backgroundSquares.map((square) => (
@@ -227,6 +264,16 @@ export default function BirthdayMessagePage({ onContinue }: BirthdayMessagePageP
           />
         ))}
       </div>
+
+      {/* Audio control hint */}
+      <motion.div
+        className="absolute bottom-4 right-4 text-white/60 text-xs"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 3 }}
+      >
+        🎵 Birthday music playing
+      </motion.div>
     </div>
   );
 }
