@@ -122,15 +122,27 @@ export default function CountdownPage({ onContinue }: CountdownPageProps) {
           Every second brings us closer to celebrating you
         </p>
 
-        {(isBirthday || timeLeft.days === 0) && (
+        <div className="flex flex-col gap-4 items-center">
+          {(isBirthday || timeLeft.days === 0) && (
+            <Button
+              onClick={handleContinue}
+              className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-4 px-8 rounded-2xl text-xl transition-all duration-300 transform hover:scale-110 animate-fade-in"
+              style={{ animationDelay: '1s' }}
+            >
+              It's Time! 🎂
+            </Button>
+          )}
+
+          {/* Test button for development */}
           <Button
             onClick={handleContinue}
-            className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-4 px-8 rounded-2xl text-xl transition-all duration-300 transform hover:scale-110 animate-fade-in"
-            style={{ animationDelay: '1s' }}
+            variant="outline"
+            className="bg-white/10 backdrop-blur-sm border-white/30 hover:bg-white/20 text-white font-medium py-2 px-6 rounded-xl text-sm transition-all duration-300 animate-fade-in"
+            style={{ animationDelay: '1.5s' }}
           >
-            It's Time! 🎂
+            Skip to Celebration (Test) 🎉
           </Button>
-        )}
+        </div>
       </div>
     </div>
   );
